@@ -244,8 +244,15 @@ def clone_repo(repo_name: str, path: str, token: str = None) -> bool:
     try:
         if token is None:
             token = os.environ.get("GITHUB_TOKEN", "git")
+        # repo_url = (
+        #     f"https://{token}@github.com/swe-bench/"
+        #     + repo_name.replace("/", "__")
+        #     + ".git"
+        # )
+            
+        # TODO: temp using for bad network
         repo_url = (
-            f"https://{token}@github.com/swe-bench/"
+            f"https://kkgithub.com/swe-bench/"
             + repo_name.replace("/", "__")
             + ".git"
         )

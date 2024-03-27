@@ -223,7 +223,7 @@ class TestbedContextManager:
         shellenv["PATH"] = conda_bin_path + os.pathsep + shellenv["PATH"]
         self.exec.subprocess_args["env"] = shellenv
 
-        path_activate = os.path.join(self.path_conda, "bin", "activate")
+        path_activate = os.path.join(self.path_conda, 'etc', 'profile.d', 'conda.sh')
         exec_type = "mamba" if "mamba" in self.path_conda else "conda"
         exec_cmd = os.path.join(self.path_conda, "bin", exec_type)
         env_list = get_conda_env_names(exec_cmd, shellenv)
@@ -284,7 +284,7 @@ class TestbedContextManager:
 
                     # Install dependencies
                     path_to_reqs = get_requirements(setup_ref_instance, self.testbed)
-                    cmd = f"source {path_activate} {env_name} && echo 'activate successful' && pip install -r {path_to_reqs}"
+                    cmd = f". {path_activate} && conda activate {env_name} && echo 'activate successful' && pip install -r {path_to_reqs}"
                     logger_testbed.info(
                         f"[Testbed] Installing dependencies for {env_name}; Command: {cmd}"
                     )
@@ -329,7 +329,7 @@ class TestbedContextManager:
 
                 # Install additional packages if specified
                 if "pip_packages" in install:
-                    cmd = f"source {path_activate} {env_name} && pip install {install['pip_packages']}"
+                    cmd = f". {path_activate} && conda activate {env_name} && pip install {install['pip_packages']}"
                     logger_testbed.info(
                         f"[Testbed] Installing pip packages for {env_name}; Command: {cmd}"
                     )
@@ -439,9 +439,11 @@ class TaskEnvContextManager:
             )
         self.log_file = os.path.join(log_dir, log_file_name)
 
+        # @ https://github.com/princeton-nlp/SWE-bench/pull/31
+        # @ https://github.com/conda/conda/issues/9296
         self.cmd_activate = (
-            f"source {os.path.join(self.conda_path, 'bin', 'activate')} "
-            + f"{self.venv} && echo 'activate successful'"
+            f". {os.path.join(self.conda_path, 'etc', 'profile.d', 'conda.sh')} "
+            + f"&& conda activate {self.venv} && echo 'activate successful' && echo $CONDA_PREFIX"
         )
         self.timeout = timeout
 
@@ -454,7 +456,7 @@ class TaskEnvContextManager:
                 "shell": False,
                 "capture_output": True,
                 "text": True,
-                "env": shellenv,
+                # "env": shellenv,
             }
         )
 
